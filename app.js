@@ -38,42 +38,50 @@ var app = new Vue({
         },
         // POST /session = Attempt to login
         postSession: function () {
-            let loginCredentials = {username: this.emailInput, password: this.passwordInput}
+            let loginCredentials = {
+                username: this.loginEmailInput, 
+                password: this.loginPasswordInput
+            };
 
-            fetch(URL + "/session", {
+            let response = await fetch(URL + "/session", {
                 method: "POST",
                 body: JSON.stringify(loginCredentials),
                 headers: {
                     "Content-Type": "application/json"
                 },
                 credentials: "include"
-            }).then((response) => {
-                console.log(response);
             });
 
-            // parse the response body
-            let body = response.JSON();
-            console.log(body);
+            // 1. parse response body
+            let body;
+            try {
+                body = response.json();
+                // console.log(body);
+            } catch (error) {
+                console.log("Response body was not json.")
+            }
 
-            // was the login successful?
-            if (response.status == 201){
-                console.log("Succesfull login attempt");
+            // 2. check - was the login successful?
+            if (response.status == 201) {
+                // successful login
 
-                // cleat inputs
-                this.emailInput = "";
-                this.passwordInput = "";
+                // clear inputs
+                this.loginEmailInput = "";
+                this.loginPasswordInput = "";
 
-                // take the user to a home page
-            } else if (response.status == 401){
-                console.log("Unsuccesfull login attempt.");
+                // take the user to the home page
+                this.loadHomePage();
 
-                // let the user know it was unsuccesfull
-                alert("Unsuccesfull login attempt.");
+            } else if (response.status == 401) {
+                // unsuccessful login
+
+                // let the user know it was unsuccessful
+                alert("Unsuccessful login");
 
                 // clear password input
-                this.passwordInput = "";
+                this.loginPasswordInput = "";
             } else {
-                console.log("Some sort of error when GETTING /session", response.status, response);
+                console.log("Some sort of error when POSTING /session:", response.status, response);
             }
         },
 
