@@ -1,0 +1,21 @@
+html{
+    background-color: rgb(2 108 255 / 42%);
+}
+#header-one{
+    background-color: rgb(2 108 255 / 28%);
+}
+#threads{
+    background-color: rgb(2 255 182 / 46%);
+}
+button {
+    top:50%;
+    background-color:#0a0a234a;
+    color: #fff;
+    margin-bottom: 10px;
+}
+button #delete-button{
+    top:50%;
+    background-color:#b90a0a4a;
+    color: #fff;
+    margin-bottom: 10px;
+}

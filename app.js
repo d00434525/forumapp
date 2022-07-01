@@ -12,6 +12,12 @@ var app = new Vue({
         newPasswordInput: "",
         newFullnameInput: "",
 
+        newPostName: "",
+        newPostCategory: "",
+        newPostDescription: "",
+
+        newPostBody: "",
+
         threads: [],
     },
     methods: {
@@ -171,6 +177,63 @@ var app = new Vue({
             } else {
                 console.error("Error fetching individual request with id", id, "- status:", response.status);
             }
+        },
+        deleteThread: async function (id) {
+            let response = await fetch(URL + "/thread/" + id, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            if (response.status == 200){
+                console.log(response);
+            } else {
+                console.error("Error fetching individual request with id", id, "- status:", response.status);
+            }
+        },
+        postThread: async function () {
+            let postBody = {
+                name: this.newPostName,
+                description: this.newPostDescription,
+                category: this.newPostCategory
+            }
+
+            let response = await fetch(URL + "/thread/", {
+                method: "POST",
+                body: JSON.stringify(postBody),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include"
+            });
+            if (response.status == 201) {
+                // created successfully
+                console.log("post successfully created");
+        }
+        },
+        // POST /post - posts a comment to a specific thread.
+        postPost: async function (id) {
+            let postBody = {
+                body: this.newPostBody,
+                thread_id: id
+            }
+
+            let response = await fetch(URL + "/post/", {
+                method: "POST",
+                body: JSON.stringify(postBody),
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include"
+            });
+
+            if (response.status == 201) {
+                // created successfully
+                this.getSingleThread(id);
+            } else {
+                console.log("Error posting new post", response.status);
+            }
+            this.newPostBody = "";
+            this.getSingleThread(id);
         }
     },
     created: function () {
