@@ -5,7 +5,7 @@ async function connect(user, pass, host, port, db_name){
     let connectString = `mongodb+srv://d00434525:codeschool@codeschool.nexin.mongodb.net/?retryWrites=true&w=majority`;
     try{
        await mongoose.connect(connectString, {
-        userNewUrlParser: true,
+        useNewUrlParser: true,
         useUnifiedTopology: true,
        });
     } catch (error) {

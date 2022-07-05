@@ -46,4 +46,4 @@ const setUpAuth = function (app) {
     });
 };
 
-modules.export = setUpAuth;
+module.exports = setUpAuth;
