@@ -1,14 +1,15 @@
-const app = require("./server");
+const app = require("./server/server");
 const { connect, onConnect } = require("./persist/connect");
+const config = require("./config");
 
 onConnect(() => {
-    app.listen(8080, () => {
-        console.log("serving on port 8080");
+    app.listen(config.http_port, () => {
+        console.log(`serving on port ${config.http_port}`);
     });
 });
 
 try {
-    await connect(
+    connect(
         config.mongo_user,
         config.mongo_pass,
         config.mongo_host,
