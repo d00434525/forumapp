@@ -102,27 +102,70 @@ app.get("/thread", async (req,res) => {
             );
         }
     }
-    res.send(JSON.stringify(threads));
+    // res.send(JSON.stringify(threads));
+    res.status(201).json(threads);
 });
 
 app.delete("/thread/:id", async (req,res) => {
-    // check authorization.
-    if (!req.user){
-        res.status(401).json({ message: "unauthorizaed." });
-        return;
-    }
-    try {
-        let thread = await Thread.findByIdAndDelete(id);
-        res.status(201).json(thread);
-    } catch {
-        res.status(500).json({
-            message: "could not delete thread.",
-            error: error,
-        });
-    }
+    // // check authorization.
+    // if (!req.user){
+    //     res.status(401).json({ message: "unauthorizaed." });
+    //     return;
+    // }
+    // try {
+    //     let thread = await Thread.findByIdAndDelete(id);
+    //     res.status(201).json(thread);
+    // } catch {
+    //     res.status(500).json({
+    //         message: "could not delete thread.",
+    //         error: error,
+    //     });
+    // }
 })
 
-app.post("/post", (req,res) => {})
+app.post("/post", async (req,res) => {
+    // check auth
+    if (!req.user) {
+        res.status(401).json({ message: "unauthorized." });
+        return;
+    }
+    // find the thread and update it with the new post
+    let thread;
+    try {
+        thread = await Thread.findByIdAndUpdate(
+            req.body.thread_id,
+            {
+                $push: {
+                    posts: {
+                        // what fields are we pushing and what are we pushing?
+                        user_id: req.body.user_id,
+                        body: req.body.body,
+                        thread_id: req.body.thread_id,
+                    },
+                },
+            },
+            {
+                new: true,
+            }
+        );
+        if (!thread) {
+            res.status(400).json({
+                message: `thread not found`,
+                id: req.body.thread_id,
+            });
+            return;
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "failed to insert post",
+            error: error,
+        });
+        return;
+    }
+
+    // return the post
+    res.status(201).json(thread.posts[thread.posts.length -1]);
+});
 
 app.delete("/thread/:thread_id/post/:post_id", (req,res) => {})
 
