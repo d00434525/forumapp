@@ -45,7 +45,7 @@ app.post("/thread", async(req,res) => {
             description: req.body.description,
             category: req.body.category,
         });
-        req.status(201).json(thread);
+        res.status(201).json(thread);
     } catch (error) {
         res.status(500).json({
             message: "could not create thread",
@@ -55,31 +55,40 @@ app.post("/thread", async(req,res) => {
 });
 
 app.get("/thread/:id", async (req,res) => {
-    // check authorization
-    if (!req.user) {
-        res.status(401).json({ message: "unauthorized."});
-        return;
-    }
+    let thread
     try {
-        let thread = await Thread.findById(id);
-        req.status(201).json(thread);
+        const id = req.params.id;
+        thread = await Thread.findById(id);
+        // res.status(201).json(thread);
     } catch (error) {
         res.status(500).json({
             message: "could not get thread",
             error: error,
         });
+        return;
     }
+    try {
+        thread = thread.toObject();
+        let user = await User.findById(thread.user_id);
+        thread.user = user;
+    } catch (error){
+        console.log(
+            `unable to get user ${thread.user_id} when getting thread ${thread._id}: ${error}`
+        )
+    }
+    res.status(201).json(thread);
 })
 
 app.get("/thread", async (req,res) => {
     try {
-        let threads = await Thread.find({}, "-posts");
-        req.status(201).json(threads);
+        var threads = await Thread.find({}, "-posts");
+        // res.status(201).json(threads);
     } catch (error) {
         res.status(500).json({
             message: "could not get threads",
             error: error,
         });
+        return;
     }
     // get all users for all the threads
     for (let k in threads) {
@@ -104,7 +113,7 @@ app.delete("/thread/:id", async (req,res) => {
     }
     try {
         let thread = await Thread.findByIdAndDelete(id);
-        req.status(201).json(thread);
+        res.status(201).json(thread);
     } catch {
         res.status(500).json({
             message: "could not delete thread.",
