@@ -153,12 +153,6 @@ app.delete("/thread/:id", async (req,res) => {
     res.status(200).json({
         message: "succesfully deleted thread."
     });
-    
-
-
-    // delete the thread
-
-    // return the selected thread
 })
 
 app.post("/post", async (req,res) => {
@@ -176,7 +170,7 @@ app.post("/post", async (req,res) => {
                 $push: {
                     posts: {
                         // what fields are we pushing and what are we pushing?
-                        user_id: req.body.user_id,
+                        user_id: req.user.id,
                         body: req.body.body,
                         thread_id: req.body.thread_id,
                     },
@@ -205,6 +199,33 @@ app.post("/post", async (req,res) => {
     res.status(201).json(thread.posts[thread.posts.length -1]);
 });
 
-app.delete("/thread/:thread_id/post/:post_id", (req,res) => {})
+app.delete("/thread/:thread_id/post/:post_id", async (req,res) => {
+    // check auth
+    if (!req.user) {
+        res.status(401).json({ message: "unauthorized." });
+        return;
+    }
+    let thread;
+    // pull thread
+    thread = await Thread.findOne({
+        _id: req.params.thread_id,
+        "posts._id": req.params.post_id,
+    });
+    // checks that the post on the thread is "owned" by the requesting user (authorized)
+    // FOR LOOP GOES HERE -=-=-=-=-=-
+    if (thread.posts != req.user.id){
+        res.status(403).json({ message: "you are not authorized to delete this thread." });
+        return;
+    }
+    // delete the post
+    await Thread.findByIdAndUpdate(req.params.thread_id, {
+        $pull: {
+            posts: {
+                _id: req.params.post_id,
+            },
+        },
+    });
+    // return the deleted post
+});
 
 module.exports = app;

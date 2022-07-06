@@ -10,7 +10,7 @@ const postSchema = mongoose.Schema(
         body: { type: String, required: true, default: "" },
         thread_id: {
             type: mongoose.Schema.Types.ObjectId,
-            red: "Thread",
+            ref: "Thread",
             required: true,
         },
     },
