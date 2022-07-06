@@ -73,7 +73,7 @@ app.get("/thread/:id", async (req,res) => {
         thread.user = user;
     } catch (error){
         console.log(
-            `unable to get user ${thread.user_id} when getting thread ${thread._id}: ${error}`
+           error // `unable to get user ${thread.user_id} when getting thread ${thread._id}: ${error}`
         )
     }
     res.status(201).json(thread);
@@ -107,20 +107,58 @@ app.get("/thread", async (req,res) => {
 });
 
 app.delete("/thread/:id", async (req,res) => {
-    // // check authorization.
-    // if (!req.user){
-    //     res.status(401).json({ message: "unauthorizaed." });
-    //     return;
-    // }
-    // try {
-    //     let thread = await Thread.findByIdAndDelete(id);
-    //     res.status(201).json(thread);
-    // } catch {
-    //     res.status(500).json({
-    //         message: "could not delete thread.",
-    //         error: error,
-    //     });
-    // }
+    // check authorization.
+    if (!req.user) {
+        res.status(401).json({ message: "unauthorized." });
+        return;
+    }
+    // pull thread
+    let thread;
+    try {
+        const id = req.params.id;
+        thread = await Thread.findById(id);
+    } catch (error){
+        res.status(500).json({
+            message: "failed to delete thread",
+            error: error,
+        });
+        return;
+    }
+
+    // check if thread is found
+    if (thread === null){
+        res.status(404).json({
+            message: `thread not found`,
+            thread_id: req.params.thread_id,
+        });
+        return;
+    }
+
+    // check that the thread is "owned" by the requesting user
+    if (thread.user_id != req.user.id){
+        res.status(403).json({ message: "you are not authorized to delete this thread." });
+        return;
+    }
+    // delete the post
+    try {
+        await Thread.findByIdAndDelete(req.params.id);
+    } catch (error) {
+        res.status(500).json({
+            message: "failed to delete post.",
+            error: error,
+        });
+        return;
+    }
+    // return 
+    res.status(200).json({
+        message: "succesfully deleted thread."
+    });
+    
+
+
+    // delete the thread
+
+    // return the selected thread
 })
 
 app.post("/post", async (req,res) => {
