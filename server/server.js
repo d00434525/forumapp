@@ -1,6 +1,6 @@
 // initiate express server
 const express = require("express");
-const { User } = require("../persist/model");
+const { User, Thread } = require("../persist/model");
 const setUpAuth = require("./auth");
 const setUpSession = require("./session");
 const app = express();
@@ -30,9 +30,32 @@ app.post("/users", async (req,res) => {
     }
 });
 
-app.post("/thread", (req,res) => {})
+app.post("/thread", async(req,res) => {
+    // auth
+    if (!req.user) {
+        res.status(401).json({ message: "unauthed" });
+        return;
+    }
+    // create with await + try/catch
+    try {
+        let thread = await Thread.create({
+            user_id: req.user.id,
+            name: req.body.name,
+            description: req.body.description,
+            category: req.body.category,
+        });
+        req.status(201).json(thread);
+    } catch (error) {
+        res.status(500).json({
+            message: "could not create thread",
+            error: error,
+        });
+    }
+});
 
-app.get("/thread/:id", (req,res) => {})
+app.get("/thread/:id", (req,res) => {
+    
+})
 
 app.get("/thread", (req,res) => {})
 
